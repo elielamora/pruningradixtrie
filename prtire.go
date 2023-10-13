@@ -11,6 +11,10 @@ type Result struct {
 	Freq uint64
 }
 
+type ResultSet interface {
+	Results() []Result
+}
+
 type PruningRadixTrie interface {
 	AddTerm(term string, count uint64)
 	TopKForPrefix(prefix string, k int) []Result
@@ -60,12 +64,18 @@ func (p *pruningRadixTrie) addTerm(
 				//term already existed
 				//existing ab
 				//new      ab
-				// if child.count == 0 {
-				// 	p.termCount++
-				// }
+				if child.count == 0 {
+					p.termCount++
+				}
 				child.count += count
-				list = append(list, child)
-				updateMaxCounts(list, child.count)
+				newMax := max(child.count, child.maxChildCount)
+				child.maxChildCount = newMax
+				// todo: see if we can only update nodes in path
+				// where max count was updated
+				// list = append(list, child)
+				// updateMaxCounts(list, child.count)
+				reorder(list, newMax)
+
 			} else if common == len(term) {
 				//new is subkey
 				//existing abcd
@@ -80,9 +90,11 @@ func (p *pruningRadixTrie) addTerm(
 				suffix := key[common:]
 				oldChildCount := child.count
 				newChild := newNode(prefix, count)
-				newChild.maxChildCount = max(cur.count, cur.maxChildCount)
+				newMax := max(cur.count, cur.maxChildCount)
+				newChild.maxChildCount = newMax
 				cur.children[i] = newChild
-				updateChildren(cur)
+				// updateChildren(cur)
+				reorder(list, newMax)
 				// adding the old child back under the split term as if it was a new term added
 				p.addTerm(newChild, suffix, oldChildCount, level+1, list)
 			} else if common == len(key) {
@@ -103,8 +115,6 @@ func (p *pruningRadixTrie) addTerm(
 				split.children = append(split.children, child)
 				split.maxChildCount = max(child.maxChildCount, child.count, count)
 				child.key = splitSuffix
-
-				updateMaxCounts(list, count) // TODO: check if we need this.
 
 				cur.children[i] = split
 				p.addTerm(split, termSuffix, count, level+1, list)
@@ -131,6 +141,16 @@ func findCommon(key, term string) int {
 		common++
 	}
 	return common
+}
+
+func reorder(nodes []*node, count uint64) {
+	for i := len(nodes) - 1; i >= 0; i-- {
+		n := nodes[i]
+		if count > n.maxChildCount {
+			n.maxChildCount = count
+		}
+		updateChildren(n)
+	}
 }
 
 // updateChildren sort children of a node in descending order
@@ -219,9 +239,9 @@ func insertTopKSuggestion(term string, freq uint64, k int, results []Result) []R
 // String the string representation of the trie in tree like format
 // [0, 777]
 //
-//	qux[777, 777]
-//	bar[77, 77]
-//	foo[7, 7]
+// qux[777, 777]
+// bar[77, 77]
+// foo[7, 7]
 func (p *pruningRadixTrie) String() string {
 	s := []struct {
 		node  *node
@@ -234,7 +254,7 @@ func (p *pruningRadixTrie) String() string {
 		level := top.level
 		s = s[:len(s)-1]
 		b.WriteString(fmt.Sprintf(
-			"%s%s[%d, %d]\n",
+			"%s%s[%d,%d]\n",
 			strings.Repeat(" ", level),
 			n.key,
 			n.count,
@@ -244,7 +264,7 @@ func (p *pruningRadixTrie) String() string {
 			s = append(s, struct {
 				node  *node
 				level int
-			}{node: n.children[i], level: level + 1})
+			}{node: n.children[i], level: len(n.key)})
 		}
 	}
 	return b.String()

@@ -2,7 +2,6 @@ package pruningradixtrie_test
 
 import (
 	"archive/zip"
-	_ "embed"
 	"errors"
 	"fmt"
 	"io"

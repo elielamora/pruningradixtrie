@@ -1,7 +1,7 @@
 package pruningradixtrie_test
 
 import (
-	_ "embed"
+	"strings"
 	"testing"
 
 	prtrie "github.com/elielamora/pruningradixtrie"
@@ -25,16 +25,12 @@ func TestPrtrieAddEmptyString(t *testing.T) {
 	assert.Equal(t, 0, len(p.TopKForPrefix("", 1)))
 }
 
-// func TestPrtrieAddTermWithZeroCount(t *testing.T) {
-// 	p := prtrie.NewPruningRadixTrie()
-// 	p.AddTerm("test", 0)
-// 	assert.Equal(t, uint64(1), p.GetTotalTermCount(), "expected count to be zero")
-// 	assert.Equal(t, 1, len(p.TopKForPrefix("", 1)))
-
-// 	p.AddTerm("test", 0)
-// 	assert.Equal(t, uint64(1), p.GetTotalTermCount(), "expected count to be zero")
-// 	assert.Equal(t, 0, len(p.TopKForPrefix("", 1)))
-// }
+func TestPrtrieAddTermWithZeroCount(t *testing.T) {
+	p := prtrie.NewPruningRadixTrie()
+	p.AddTerm("test", 0)
+	assert.Equal(t, uint64(0), p.GetTotalTermCount(), "expected count to be zero")
+	assert.Empty(t, p.TopKForPrefix("", 1))
+}
 
 func TestPrtrieAddSingle(t *testing.T) {
 	p := prtrie.NewPruningRadixTrie()
@@ -179,6 +175,20 @@ func TestPrtrieAddingOverlappingTerm(t *testing.T) {
 	}, p.TopKForPrefix("ter", 2), "expected all top terms")
 }
 
+func TestPrtrieAddingOverlappingTermsThenAddCommon(t *testing.T) {
+	p := prtrie.NewPruningRadixTrie()
+	p.AddTerm("testing", 5)
+	p.AddTerm("tester", 10)
+	assert.Equal(t, uint64(2), p.GetTotalTermCount())
+	p.AddTerm("test", 80)
+	assert.Equal(t, uint64(3), p.GetTotalTermCount())
+	assert.Equal(t, []prtrie.Result{
+		{Term: "test", Freq: 80},
+		{Term: "tester", Freq: 10},
+		{Term: "testing", Freq: 5},
+	}, p.TopKForPrefix("test", 4), "expected all top terms")
+}
+
 func TestPrtrieGetManyChildrenTermsSameFrequency(t *testing.T) {
 	p := prtrie.NewPruningRadixTrie()
 	p.AddTerm("abc", 1)
@@ -194,4 +204,75 @@ func TestPrtrieGetManyChildrenTermsSameFrequency(t *testing.T) {
 		{Term: "abc", Freq: 1},
 		{Term: "abcd", Freq: 1},
 	}, p.TopKForPrefix("ab", 2), "expected all top terms")
+}
+
+func TestPrtrieString(t *testing.T) {
+	p := prtrie.NewPruningRadixTrie()
+	assert.Equal(t, "[0,0]\n", p.String())
+	p.AddTerm("test", 1)
+	assert.Equal(t, strings.Join([]string{
+		"[0,1]",
+		"test[1,1]",
+		"",
+	}, "\n"), p.String())
+	p.AddTerm("testing", 2)
+	assert.Equal(t, strings.Join([]string{
+		"[0,2]",
+		"test[1,2]",
+		"    ing[2,2]",
+		"",
+	}, "\n"), p.String())
+	p.AddTerm("tester", 5)
+	assert.Equal(t, strings.Join([]string{
+		"[0,5]",
+		"test[1,5]",
+		"    er[5,5]",
+		"    ing[2,2]",
+		"",
+	}, "\n"), p.String())
+	assert.Equal(t, []prtrie.Result{
+		{Term: "tester", Freq: 5},
+		{Term: "testing", Freq: 2},
+	}, p.TopKForPrefix("tes", 2), "expected all top terms")
+	p.AddTerm("food", 1)
+	assert.Equal(t, strings.Join([]string{
+		"[0,5]",
+		"test[1,5]",
+		"    er[5,5]",
+		"    ing[2,2]",
+		"food[1,1]",
+		"",
+	}, "\n"), p.String())
+	p.AddTerm("food", 12)
+	assert.Equal(t, []prtrie.Result{
+		{Term: "food", Freq: 13},
+		{Term: "tester", Freq: 5},
+		{Term: "testing", Freq: 2},
+		{Term: "test", Freq: 1},
+	}, p.TopKForPrefix("", 4), "expected all top terms")
+	assert.Equal(t, strings.Join([]string{
+		"[0,13]",
+		"food[13,13]",
+		"test[1,5]",
+		"    er[5,5]",
+		"    ing[2,2]",
+		"",
+	}, "\n"), p.String())
+	p.AddTerm("testing", 48)
+	assert.Equal(t, []prtrie.Result{
+		{Term: "testing", Freq: 50},
+		{Term: "tester", Freq: 5},
+	}, p.TopKForPrefix("tes", 2), "expected all top terms")
+	assert.Equal(t, strings.Join([]string{
+		"[0,50]",
+		"test[1,50]",
+		"    ing[50,50]",
+		"    er[5,5]",
+		"food[13,13]",
+		"",
+	}, "\n"), p.String())
+}
+
+func TestResultString(t *testing.T) {
+	assert.Equal(t, "test:5", prtrie.Result{Term: "test", Freq: 5}.String())
 }
