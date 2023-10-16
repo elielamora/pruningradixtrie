@@ -13,6 +13,10 @@ type Result struct {
 
 type ResultSet interface {
 	Results() []Result
+	PushResult(Result)
+	PopResult() Result
+	PeekMinResult() Result
+	Len() int
 }
 
 type PruningRadixTrie interface {
@@ -175,23 +179,24 @@ func (p *pruningRadixTrie) TopKForPrefix(prefix string, k int) []Result {
 	if k <= 0 {
 		return nil
 	}
-	var results []Result
-	return topKForPrefix(prefix, "", p.trie, k, results)
+	results := NewSortedResults()
+	topKForPrefix(prefix, "", p.trie, k, results)
+	return results.Results()
 }
 
 // TopKForPrefix implements PruningRadixTrie.
-func topKForPrefix(prefix, path string, cur *node, k int, results []Result) []Result {
-	if len(results) == k && cur.maxChildCount <= results[k-1].Freq {
-		return results
+func topKForPrefix(prefix, path string, cur *node, k int, results ResultSet) {
+	if results.Len() == k && cur.maxChildCount <= results.PeekMinResult().Freq {
+		return
 	}
 
 	noPrefix := prefix == ""
 	if len(cur.children) == 0 {
-		return results
+		return
 	}
 	for _, child := range cur.children {
 		key := child.key
-		if len(results) == k && child.count <= results[k-1].Freq && child.maxChildCount <= results[k-1].Freq {
+		if results.Len() == k && child.count <= results.PeekMinResult().Freq && child.maxChildCount <= results.PeekMinResult().Freq {
 			if noPrefix {
 				continue
 			}
@@ -199,41 +204,24 @@ func topKForPrefix(prefix, path string, cur *node, k int, results []Result) []Re
 		}
 		if noPrefix || strings.HasPrefix(key, prefix) {
 			if child.count > 0 {
-				results = insertTopKSuggestion(path+key, child.count, k, results)
+				result := Result{Term: path + key, Freq: child.count}
+				results.PushResult(result)
+				if results.Len() > k {
+					results.PopResult()
+				}
 			}
 			if len(child.children) > 0 {
-				results = topKForPrefix("", path+key, child, k, results)
+				topKForPrefix("", path+key, child, k, results)
 			}
 			if !noPrefix {
 				break
 			}
 		} else if strings.HasPrefix(prefix, key) {
 			if len(child.children) > 0 {
-				return topKForPrefix(prefix[len(key):], path+key, child, k, results)
+				topKForPrefix(prefix[len(key):], path+key, child, k, results)
 			}
 		}
 	}
-	return results
-}
-
-// TODO: switch to heap for insertion, and heapsort for results
-func insertTopKSuggestion(term string, freq uint64, k int, results []Result) []Result {
-	//at the end/highest index is the lowest value
-	// >  : old take precedence for equal rank
-	// >= : new take precedence for equal rank
-	if len(results) > k || (len(results) == k && freq < results[k-1].Freq) {
-		return results
-	}
-	result := Result{Term: term, Freq: freq}
-	results = append(results, result)
-	sort.Slice(results, func(i, j int) bool {
-		return results[j].Freq < results[i].Freq
-	})
-
-	if len(results) > k {
-		results = results[:k]
-	}
-	return results
 }
 
 // String the string representation of the trie in tree like format
