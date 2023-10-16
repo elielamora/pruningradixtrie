@@ -200,9 +200,11 @@ func TestPrtrieGetManyChildrenTermsSameFrequency(t *testing.T) {
 	p.AddTerm("abcdef", 1)
 	p.AddTerm("abcdefg", 1)
 	p.AddTerm("abcdefh", 1)
+	// TODO: flaky test, if we change the ResultSet results with equal frequency might
+	// be sorted differently
 	assert.Equal(t, []prtrie.Result{
-		{Term: "abc", Freq: 1},
 		{Term: "abcd", Freq: 1},
+		{Term: "abc", Freq: 1},
 	}, p.TopKForPrefix("ab", 2), "expected all top terms")
 }
 

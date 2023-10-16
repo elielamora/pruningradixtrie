@@ -179,7 +179,7 @@ func (p *pruningRadixTrie) TopKForPrefix(prefix string, k int) []Result {
 	if k <= 0 {
 		return nil
 	}
-	results := NewSortedResults()
+	results := NewResultHeap()
 	topKForPrefix(prefix, "", p.trie, k, results)
 	return results.Results()
 }
