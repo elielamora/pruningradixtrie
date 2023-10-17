@@ -180,6 +180,9 @@ func (p *pruningRadixTrie) TopKForPrefix(prefix string, k int) []Result {
 		return nil
 	}
 	results := NewResultHeap()
+	if len(prefix) > 5 || k < 1000 {
+		results = NewBSResultSet()
+	}
 	topKForPrefix(prefix, "", p.trie, k, results)
 	return results.Results()
 }

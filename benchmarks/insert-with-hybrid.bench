@@ -1,0 +1,53 @@
+go test -bench=Bench
+goos: darwin
+goarch: arm64
+pkg: github.com/elielamora/pruningradixtrie
+BenchmarkTrivialOperation-8                 	1000000000	         0.3105 ns/op
+BenchmarkPruningRadixTrie_Insert-8          	 3738632	       360.5 ns/op
+BenchmarkPruningRadixTrie_TopKMicrosoft/Top10:_m-8         	   80858	     14876 ns/op
+BenchmarkPruningRadixTrie_TopKMicrosoft/Top10:_mi-8        	  104346	     11610 ns/op
+BenchmarkPruningRadixTrie_TopKMicrosoft/Top10:_mic-8       	  182156	      6767 ns/op
+BenchmarkPruningRadixTrie_TopKMicrosoft/Top10:_micr-8      	  218690	      5616 ns/op
+BenchmarkPruningRadixTrie_TopKMicrosoft/Top10:_micro-8     	  218209	      5613 ns/op
+BenchmarkPruningRadixTrie_TopKMicrosoft/Top10:_micros-8    	  298250	      4051 ns/op
+BenchmarkPruningRadixTrie_TopKMicrosoft/Top10:_microso-8   	  333378	      3618 ns/op
+BenchmarkPruningRadixTrie_TopKMicrosoft/Top10:_microsof-8  	  343279	      3594 ns/op
+BenchmarkPruningRadixTrie_TopKMicrosoft/Top10:_microsoft-8 	  308540	      3581 ns/op
+BenchmarkPruningRadixTrie_TopKMicrosoft/Top50:_m-8         	   16669	     71909 ns/op
+BenchmarkPruningRadixTrie_TopKMicrosoft/Top50:_mi-8        	   15541	     76257 ns/op
+BenchmarkPruningRadixTrie_TopKMicrosoft/Top50:_mic-8       	   24582	     49596 ns/op
+BenchmarkPruningRadixTrie_TopKMicrosoft/Top50:_micr-8      	   38035	     32323 ns/op
+BenchmarkPruningRadixTrie_TopKMicrosoft/Top50:_micro-8     	   37915	     31339 ns/op
+BenchmarkPruningRadixTrie_TopKMicrosoft/Top50:_micros-8    	   72189	     17290 ns/op
+BenchmarkPruningRadixTrie_TopKMicrosoft/Top50:_microso-8   	  103617	     11004 ns/op
+BenchmarkPruningRadixTrie_TopKMicrosoft/Top50:_microsof-8  	  118656	     11615 ns/op
+BenchmarkPruningRadixTrie_TopKMicrosoft/Top50:_microsoft-8 	  117408	     10904 ns/op
+BenchmarkPruningRadixTrie_TopKMicrosoft/Top100:_m-8        	    7338	    159963 ns/op
+BenchmarkPruningRadixTrie_TopKMicrosoft/Top100:_mi-8       	    7269	    165191 ns/op
+BenchmarkPruningRadixTrie_TopKMicrosoft/Top100:_mic-8      	   10000	    103306 ns/op
+BenchmarkPruningRadixTrie_TopKMicrosoft/Top100:_micr-8     	   19260	     61916 ns/op
+BenchmarkPruningRadixTrie_TopKMicrosoft/Top100:_micro-8    	   20156	     59095 ns/op
+BenchmarkPruningRadixTrie_TopKMicrosoft/Top100:_micros-8   	   42295	     29146 ns/op
+BenchmarkPruningRadixTrie_TopKMicrosoft/Top100:_microso-8  	   75207	     17692 ns/op
+BenchmarkPruningRadixTrie_TopKMicrosoft/Top100:_microsof-8 	   78306	     17258 ns/op
+BenchmarkPruningRadixTrie_TopKMicrosoft/Top100:_microsoft-8         	   78328	     16928 ns/op
+BenchmarkPruningRadixTrie_TopKMicrosoft/Top1000:_m-8                	     632	   1833072 ns/op
+BenchmarkPruningRadixTrie_TopKMicrosoft/Top1000:_mi-8               	     980	   1207014 ns/op
+BenchmarkPruningRadixTrie_TopKMicrosoft/Top1000:_mic-8              	    1888	    638485 ns/op
+BenchmarkPruningRadixTrie_TopKMicrosoft/Top1000:_micr-8             	    4161	    310599 ns/op
+BenchmarkPruningRadixTrie_TopKMicrosoft/Top1000:_micro-8            	    4327	    301922 ns/op
+BenchmarkPruningRadixTrie_TopKMicrosoft/Top1000:_micros-8           	   10000	    104236 ns/op
+BenchmarkPruningRadixTrie_TopKMicrosoft/Top1000:_microso-8          	   40069	     33258 ns/op
+BenchmarkPruningRadixTrie_TopKMicrosoft/Top1000:_microsof-8         	   46110	     29427 ns/op
+BenchmarkPruningRadixTrie_TopKMicrosoft/Top1000:_microsoft-8        	   43568	     29739 ns/op
+BenchmarkPruningRadixTrie_TopKMicrosoft/Top10000:_m-8               	      87	  11720123 ns/op
+BenchmarkPruningRadixTrie_TopKMicrosoft/Top10000:_mi-8              	     235	   5346077 ns/op
+BenchmarkPruningRadixTrie_TopKMicrosoft/Top10000:_mic-8             	     573	   2223568 ns/op
+BenchmarkPruningRadixTrie_TopKMicrosoft/Top10000:_micr-8            	    2130	    597855 ns/op
+BenchmarkPruningRadixTrie_TopKMicrosoft/Top10000:_micro-8           	    2235	    570839 ns/op
+BenchmarkPruningRadixTrie_TopKMicrosoft/Top10000:_micros-8          	   10000	    102861 ns/op
+BenchmarkPruningRadixTrie_TopKMicrosoft/Top10000:_microso-8         	   40484	     33860 ns/op
+BenchmarkPruningRadixTrie_TopKMicrosoft/Top10000:_microsof-8        	   44953	     30357 ns/op
+BenchmarkPruningRadixTrie_TopKMicrosoft/Top10000:_microsoft-8       	   42582	     30165 ns/op
+PASS
+ok  	github.com/elielamora/pruningradixtrie	94.591s
